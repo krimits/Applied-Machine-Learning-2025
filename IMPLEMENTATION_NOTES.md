@@ -33,7 +33,9 @@ This document describes the implementation of the Economic Connectedness assignm
 **Key Features:**
 - Automatically selects top 200 counties by population
 - Looks for 'kfr_pooled_p25' column (standard measure for upward mobility)
-- Fallback to demo data if mobility column not found
+- **Important**: Fallback to synthetic demo data if mobility column not found
+  - This is for development/testing only and should not be used for actual assignment submission
+  - Real data should be obtained from Opportunity Atlas if not present in Social Capital dataset
 - Uses matplotlib for static visualization
 
 ### Question 3: EC vs Income with Mobility Colors
@@ -80,9 +82,10 @@ This document describes the implementation of the Economic Connectedness assignm
 **Key Features:**
 - Custom HHI calculation: 1 - Σ(s_i²) where s_i is fraction of race/ethnicity i
 - Creates 20 ventiles (5-percentile bins) for cleaner visualization
-- Weighted means using:
-  - Colleges: Number of students per cohort
-  - Neighborhoods: Number of low-income children
+- Weighted means using dynamically identified columns:
+  - Colleges: Searches for columns with 'num_' prefix (typically student count per cohort)
+  - Neighborhoods: Searches for columns with 'num_below' prefix or 'pop' (typically low-income children count)
+  - Falls back to equal weights if appropriate columns not found
 - Different markers and colors for visual distinction
 
 ## Technical Details
@@ -133,9 +136,15 @@ Each code cell includes:
    jupyter notebook economic_connectedness_assignment.ipynb
    ```
 
-3. Run cells sequentially (Kernel → Restart & Run All)
+3. Run cells sequentially
+   - **Recommended**: Run cells one at a time (Shift+Enter) to inspect intermediate results
+   - Alternatively: Use Kernel → Restart & Run All (but this may hide data download issues)
+   - Allow time for data downloads to complete (may take 30-60 seconds per dataset)
 
-4. Internet connection required for data download
+4. **Important**: Internet connection required for data download
+   - All data is fetched from remote URLs on each run
+   - If connection is slow or unstable, cells may timeout
+   - Consider downloading datasets manually if repeated access is needed
 
 ## Expected Output
 
@@ -149,6 +158,23 @@ All visualizations match the style and content of the reference images provided 
 ## Notes
 
 - Code is self-contained in each cell (imports repeated for clarity)
-- Data download happens on each run (no local caching)
+- **Limitation**: Data download happens on each run (no local caching)
+  - This ensures fresh data but requires stable internet connection
+  - For offline work, consider manually downloading datasets and modifying URLs to local paths
 - Plots are optimized for notebook display (appropriate figure sizes)
 - All analyses follow the methodologies described in the Nature papers
+
+## Potential Issues and Solutions
+
+### Data Download Failures
+If data download fails:
+1. Check internet connection
+2. Verify URLs are still active (Social Capital Atlas links)
+3. Download datasets manually from https://data.humdata.org/dataset/social-capital-atlas
+4. Modify code to load from local CSV files instead of URLs
+
+### Missing Columns
+Some columns mentioned in instructions may have different names in actual datasets:
+- Code searches for columns using pattern matching (e.g., 'kfr', 'median', 'pop')
+- If critical columns are missing, code provides informative error messages
+- Fallback behavior exists for Q2 (synthetic data) but should not be used for final submission
